@@ -7,6 +7,8 @@
   <name>jetty class loader for magnolia</name>
   <version>1.1-SNAPSHOT</version>
   <inceptionYear>2019</inceptionYear>
+  <description>A class loader to use with jetty:run</description>
+  <url>https://github.com/vpro/magnolia-jetty</url>
 
 
   <licenses>
