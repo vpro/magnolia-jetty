@@ -1,0 +1,11 @@
+language: java
+env:
+  global:
+  - SONATYPE_USERNAME=vpro
+
+jdk:
+- oraclejdk8
+sudo: false
+script: mvn -Pdeploy clean deploy --settings .travis-settings.xml -DskipTests=true -Dgpg.skip=true  -B
+after_success:
+
