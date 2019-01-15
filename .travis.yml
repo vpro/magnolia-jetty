@@ -2,10 +2,10 @@ language: java
 env:
   global:
   - SONATYPE_USERNAME=vpro
-
+  - secure: lrpYwrTWvO/yOEBVyyTPi0xYdG/3XcctJkrckbcSEuRuzOL7eWLTpJeyMrW0q2gK3jENJBk3OeWlQ/gU4xiB/mQ5rjq6NqqPVR4iHiL123G2adbw93epZtNTWNbPYtr/REjmRaLo9scgBe3BJJuQSwJ0hGS6yTVfPNnE+M4Dsjyhkjj8gRsEWv9bTc5nJ2bYU3Wf050WRKWg1b7VDVoT59ogqzZImICr8hAOHLQo9Sof2XasjI1HS7IY8tT7q90LwubZECWmgJUxQTMlOk44LuvDHVyu5v+Of9QJjJ4WB8hIZFXUCREfFlvWtIBaS9Msbgb56GFuoxaClb9ZuPkWac8xYXgwQ3xV/sRDeA2t9cpnSRsnSg6TqskCrMJJTDEADEepifNHiOVsHjy/wki2BJEmTThY+Q3HI1K6s9AYVwmSsCQILeTKnRp8ABQELJEPh+K1NCRMDB1fC7qjVqXTdzJkSDZbHzPHYbza4Jm3jAZh6ybcRLANZl40aw4p8XWVX6bHPuxdpSLODy3uDNywDnh6MdXUFAY1xqoIfmKscivhlnFswh17V2/VOMNdh/dnh1XAiqq1eQdm6gTB5AIIGACJDXO69qYhfezEQmHpR/5E9L7xqmRCOzKprZKmkY1xHzXozQHFHhKHceCQR5c0T2zKj5GTIKFMSbxt3lMnt2I=
 jdk:
 - oraclejdk8
 sudo: false
-script: mvn -Pdeploy clean deploy --settings .travis-settings.xml -DskipTests=true -Dgpg.skip=true  -B
-after_success:
-
+script: mvn -Pdeploy clean deploy --settings .travis-settings.xml -DskipTests=true
+  -Dgpg.skip=true  -B
+after_success: 
