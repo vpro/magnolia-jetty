@@ -5,7 +5,7 @@
   <groupId>nl.vpro.magnolia</groupId>
   <artifactId>magnolia-jetty</artifactId>
   <name>jetty class loader for magnolia</name>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <inceptionYear>2019</inceptionYear>
 
 
@@ -37,7 +37,7 @@
     <connection>scm:git:git://git@github.com/vpro/magnolia-jetty.git</connection>
     <developerConnection>scm:git:git@github.com:vpro/magnolia-jetty.git</developerConnection>
     <url>https://github.com/vpro/magnolia-jetty</url>
-    <tag>HEAD</tag>
+    <tag>1.0</tag>
   </scm>
 
 
