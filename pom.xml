@@ -4,9 +4,43 @@
 
   <groupId>nl.vpro.magnolia</groupId>
   <artifactId>magnolia-jetty</artifactId>
-  <name>magnolia-context-annotations</name>
+  <name>jetty class loader for magnolia</name>
   <version>1.0-SNAPSHOT</version>
   <inceptionYear>2019</inceptionYear>
+
+
+  <licenses>
+    <license>
+      <name>GPLv3</name>
+      <url>http://www.gnu.org/licenses/gpl-3.0.txt</url>
+    </license>
+  </licenses>
+
+
+  <developers>
+    <developer>
+      <id>mihxil</id>
+      <name>Michiel Meeuwissen</name>
+      <email>michiel.meeuwissen+github@gmail.com</email>
+      <url>https://meeuw.org</url>
+      <organization>VPRO</organization>
+      <organizationUrl>https://github.com/vpro/</organizationUrl>
+      <roles>
+        <role>architect</role>
+        <role>developer</role>
+      </roles>
+      <timezone>Europe/Amsterdam</timezone>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git://git@github.com/vpro/magnolia-jetty.git</connection>
+    <developerConnection>scm:git:git@github.com:vpro/magnolia-jetty.git</developerConnection>
+    <url>https://github.com/vpro/magnolia-jetty</url>
+    <tag>HEAD</tag>
+  </scm>
+
+
   <properties>
     <jetty.version>9.4.14.v20181114</jetty.version>
   </properties>
