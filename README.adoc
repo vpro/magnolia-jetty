@@ -1,6 +1,6 @@
 = magnolia-jetty
 
-image:https://travis-ci.com/vpro/magnolia-jetty.svg?[Build Status,link=https://travis-ci.com/vpro/magnolia-jetty]
+image:https://github.com/vpro//magnolia-jetty/workflows/build/badge.svg?[Build Status,link=https://github.com/vpro/magnolia-jetty/actions?query=workflow%3Abuild]
 image:https://img.shields.io/maven-central/v/nl.vpro.magnolia/magnolia-jetty.svg?label=Maven%20Central[Maven Central,link=https://search.maven.org/search?q=g:"nl.vpro.magnolia"%20a:"magnolia-jetty"]
 
 
