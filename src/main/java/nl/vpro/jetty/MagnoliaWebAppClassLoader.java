@@ -1,11 +1,11 @@
 package nl.vpro.jetty;
 
+import org.eclipse.jetty.webapp.WebAppClassLoader;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import org.eclipse.jetty.webapp.WebAppClassLoader;
 
 /**
  * See MGNL-12866
@@ -17,7 +17,7 @@ import org.eclipse.jetty.webapp.WebAppClassLoader;
  * @since 3.1
  */
 public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
-    private static String RESOURCES = "src" + File.separator + "main" + File.separator + "resources" + File.separator;
+    private static final String RESOURCES = "src" + File.separator + "main" + File.separator + "resources" + File.separator;
 
 
     private final File[] dirs;
