@@ -88,6 +88,10 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
 
     private URL[] urls;
 
+
+    /**
+     * See MGNL-18589
+     */
     @Override
     public synchronized URL[] getURLs() {
         if (urls == null) {
