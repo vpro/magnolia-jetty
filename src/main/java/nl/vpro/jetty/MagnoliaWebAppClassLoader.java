@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
  *
  * For now no optimization (perhaps cache for all this would be imaginable) whatsoever was done. It seems not very necessary.
  *
+ * It will watch all {@literal ../*}/src/main/resources/ directories.
+ *
  * @author Michiel Meeuwissen
  * @since 3.1
  */
