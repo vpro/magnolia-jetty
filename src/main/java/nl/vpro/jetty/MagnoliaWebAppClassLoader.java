@@ -110,7 +110,11 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
         return urls;
     }
 
-    public static class Resource {
+    /**
+     * Just represents one file with it's original lastmodified timestamp.
+     * We can use this to detect and log changes.
+     */
+    static class Resource {
         private File file;
         private long lastModified;
 
