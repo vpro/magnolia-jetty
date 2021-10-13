@@ -44,7 +44,8 @@
 
 
   <properties>
-    <jetty.version>11.0.6</jetty.version>
+    <jetty.version>9.4.19.v20190610</jetty.version>
+    <slf4j.version>1.7.25</slf4j.version>
   </properties>
 
   <build>
@@ -54,8 +55,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
         <configuration>
-          <source>11</source>
-          <target>11</target>
+          <source>8</source>
+          <target>8</target>
         </configuration>
       </plugin>
       <plugin>
@@ -85,6 +86,11 @@
       <artifactId>jetty-webapp</artifactId>
       <version>${jetty.version}</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
     </dependency>
   </dependencies>
 
