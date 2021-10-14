@@ -113,7 +113,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.6</version>
+            <version>3.0.1</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -139,7 +139,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>3.2.0</version>
+            <version>3.3.1</version>
             <executions>
               <execution>
                 <id>attach-javadocs</id>
@@ -149,7 +149,15 @@
               </execution>
             </executions>
           </plugin>
-
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-release-plugin</artifactId>
+            <version>2.5.3</version>
+            <configuration>
+              <branchName>${project.version}</branchName>
+              <tagNameFormat>@{project.version}</tagNameFormat>
+            </configuration>
+          </plugin>
         </plugins>
       </build>
     </profile>
