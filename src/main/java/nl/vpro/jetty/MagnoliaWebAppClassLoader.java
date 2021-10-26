@@ -1,9 +1,7 @@
 package nl.vpro.jetty;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -74,7 +72,7 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
 
                     try {
                         LOG.debug("Found {}", resource);
-                        return resource.toURI().toURL();
+                        return getUrl(resource);
                     } catch (MalformedURLException e) {
                         LOG.error("{} -> {}", resource, e.getMessage());
 
@@ -99,10 +97,11 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
         if (urls == null) {
             List<URL> result = new ArrayList<>();
             for (File f : dirs) {
+                File resourceFile = new File(f, RESOURCES);
                 try {
-                    result.add(new File(f, RESOURCES).toURI().toURL());
+                    result.add(getUrl(resourceFile));
                 } catch (MalformedURLException e) {
-                    LOG.warn(e.getMessage());
+                    LOG.error("{} -> {}", resourceFile, e.getMessage());
                 }
             }
             result.addAll(Arrays.asList(super.getURLs()));
@@ -110,6 +109,19 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
             urls =  result.toArray(new URL[0]);
         }
         return urls;
+    }
+
+    URL getUrl(File f) throws MalformedURLException {
+        return f.toURI().toURL();
+        // Magnolia get thoroughly confused if you give it any then else then file: or jar-file:
+        /*
+        return new URL("files", null,  -1, f.getAbsolutePath(), new URLStreamHandler() {
+            @Override
+            protected URLConnection openConnection(URL u) throws IOException {
+                return new File(u.getPath()).toURI().toURL().openConnection();
+            }
+        });
+         */
     }
 
     /**
