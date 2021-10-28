@@ -139,7 +139,7 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
      * Watch for all creation events, and if one happens, touch the containing directory.
      * This triggers info.magnolia.resourceloader.classpath.service.impl.devmode.DevelopmentModeClasspathService.reload
      *
-     * Otherwise it doesn't. It seems a bug?
+     * Otherwise, it doesn't. It doesn't seem to be expecting directories, just jars.
      */
     protected  void watch() {
 
