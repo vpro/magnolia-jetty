@@ -22,11 +22,3 @@ jobs:
         servers: '[{"id": "vpro-ossrh", "username": "vpro", "password": "${{secrets.SONATYPE_PASSWORD}}"}]'
     - name: Build with Maven
       run: mvn -B -fn -Pdeploy deploy
-    - name: codecov
-      run: bash <(curl -s https://codecov.io/bash)
-      if: ${{ github.event_name == 'push' }}
-    - name: Publish Test Report
-      uses: scacap/action-surefire-report@v1
-      if: ${{ github.event_name == 'push' }}
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
