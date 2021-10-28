@@ -19,7 +19,7 @@ jobs:
         java-version: 8
     - uses: s4u/maven-settings-action@v2
       with:
-        servers: '[{"id": "vpro-ossrh", "username": "vpro", "password": "${{secrets.OSSRH_PASSWORD}}"}]'
+        servers: '[{"id": "vpro-ossrh", "username": "vpro", "password": "${{secrets.SONATYPE_PASSWORD}}"}]'
     - name: Build with Maven
       run: mvn -B -fn -Pdeploy deploy
     - name: codecov
