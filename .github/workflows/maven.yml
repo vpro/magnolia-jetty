@@ -18,8 +18,11 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 11
+    - uses: s4u/maven-settings-action@v2
+      with:
+        servers: '[{"id": "vpro-ossrh", "username": "vpro", "password": "${{secrets.OSSRH_PASSWORD}}"}]'
     - name: Build with Maven
-      run: mvn -B -fn
+      run: mvn -B -fn -Pdeploy deploy
     - name: codecov
       run: bash <(curl -s https://codecov.io/bash)
       if: ${{ github.event_name == 'push' }}
@@ -28,7 +31,3 @@ jobs:
       if: ${{ github.event_name == 'push' }}
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Deploy with Maven
-      run: OSSRH_PASSWORD=${{ secrets.OSSRH_PASSWORD }} mvn -B -Ddeploy  -DskipTests=true -s $GITHUB_WORKSPACE/.github/settings.xml -Dgpg.skip=true
-      if: ${{ github.event_name == 'push' }}
-
