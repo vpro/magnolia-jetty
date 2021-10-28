@@ -41,14 +41,18 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
 
     {
         File dir = new File(System.getProperty("user.dir")).getParentFile();
-        dirs = Arrays.stream(Objects.requireNonNull(dir.listFiles(pathname -> pathname.isDirectory() && new File(pathname, RESOURCES).isDirectory()))).map(f -> new File(f, RESOURCES)).toArray(File[]::new);
+        dirs = Arrays.stream(
+                Objects.requireNonNull(
+                    dir.listFiles(pathname ->
+                        pathname.isDirectory() && new File(pathname, RESOURCES).isDirectory()
+                    )
+                )
+            ).map(f -> new File(f, RESOURCES)).toArray(File[]::new);
         if (dirs.length > 0) {
             LOG.info("Watching files in {}", Arrays.asList(dirs));
+            new Thread(this::watch, "Watching directories for jetty run").start();
         } else {
             LOG.info("Could not find files to watch");
-        }
-        if (dirs.length > 0) {
-             new Thread(this::watch, "Watching directories for jetty run").start();
         }
     }
 
