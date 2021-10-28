@@ -46,7 +46,7 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
             LOG.info("Could not find files to watch");
         }
         if (dirs.length > 0) {
-            watch();
+             new Thread(this::watch, "Watching directories for jetty run").start();
         }
     }
 
@@ -142,58 +142,53 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
      * Otherwise it doesn't. It seems a bug?
      */
     protected  void watch() {
-        new Thread(() -> {
-            final Map<WatchKey, Path> keys = registerWatchers();
-            LOG.info("Watching {} directories for new files", keys.size());
-            while (true) {
-                try {
-                    WatchKey key = watchService.take();
-                    final Path dir = keys.get(key);
-                    if (dir == null) {
-                        continue;
-                    }
-                    for (WatchEvent<?> event : key.pollEvents()) {
-                        Path context = dir.resolve((Path) event.context());
-                        if (Files.isRegularFile(context)) {
-                            for (File d : dirs) {
-                                if (context.toAbsolutePath().startsWith(d.getAbsolutePath())) {
-                                    LOG.info("Found change in {}, touching {}", context, d);
-                                    long lastModified = System.currentTimeMillis();
-                                    if (d.lastModified() < lastModified) {
-                                        boolean success = d.setLastModified(lastModified);
-                                        if (!success) {
-                                            LOG.warn("Could not set timestamp of {}", d);
-                                        }
+
+        final Map<WatchKey, Path> keys = registerWatchers();
+        LOG.info("Watching {} directories for new files", keys.size());
+        boolean valid = true;
+        while (valid) {
+            try {
+                WatchKey key = watchService.take();
+                final Path dir = keys.get(key);
+                if (dir == null) {
+                    continue;
+                }
+                for (WatchEvent<?> event : key.pollEvents()) {
+                    Path context = dir.resolve((Path) event.context());
+                    if (Files.isRegularFile(context)) {
+                        for (File d : dirs) {
+                            if (context.toAbsolutePath().startsWith(d.getAbsolutePath())) {
+                                LOG.info("Found change in {}, touching {}", context, d);
+                                long lastModified = System.currentTimeMillis();
+                                if (d.lastModified() < lastModified) {
+                                    boolean success = d.setLastModified(lastModified);
+                                    if (!success) {
+                                        LOG.warn("Could not set timestamp of {}", d);
                                     }
-                                }
-                            }
-                        } else if (Files.isDirectory(context)) {
-                            for (File d : dirs) {
-                                if (context.toAbsolutePath().startsWith(d.getAbsolutePath())) {
-                                    LOG.info("Found new directory in {} in {}, watching too", context, d);
-                                    try {
-                                        context.register(watchService, ENTRY_CREATE);
-                                    } catch (IOException e) {
-                                        LOG.error(e.getMessage());
-                                    }
-                                    break;
                                 }
                             }
                         }
+                    } else if (Files.isDirectory(context)) {
+                        for (File d : dirs) {
+                            if (context.toAbsolutePath().startsWith(d.getAbsolutePath())) {
+                                LOG.info("Found new directory in {} in {}, watching too", context, d);
+                                try {
+                                    context.register(watchService, ENTRY_CREATE);
+                                } catch (IOException e) {
+                                    LOG.error(e.getMessage());
+                                }
+                                break;
+                            }
+                        }
+                    }
 
-                    }
-                    boolean valid = key.reset(); // IMPORTANT: The key must be reset after processed
-                    if (!valid) {
-                        break;
-                    }
-                } catch (InterruptedException e) {
-                    LOG.info("Interrupted");
-                    //return;
                 }
-
+                valid = key.reset(); // IMPORTANT: The key must be reset after processed
+            } catch (InterruptedException e) {
+                LOG.info("Interrupted");
+                return;
             }
-
-        }).start();
+        }
     }
 
     protected Map<WatchKey, Path>  registerWatchers()  {
