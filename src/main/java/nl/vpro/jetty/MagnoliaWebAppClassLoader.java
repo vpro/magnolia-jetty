@@ -158,30 +158,32 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
                 try {
                     final Path dir = keys.get(key);
                     if (dir == null) {
-                        LOG.info("No such dir {} watching", dir);
+                        LOG.info("No such dir {} watching", key);
                         continue;
                     }
                     for (WatchEvent<?> event : key.pollEvents()) {
                         Path context = dir.resolve((Path) event.context());
                         if (Files.isRegularFile(context)) {
+                            boolean found = false;
                             for (File d : dirs) {
                                 if (context.toAbsolutePath().startsWith(d.getAbsolutePath())) {
                                     LOG.info("Found {} in {}, touching {}", event.kind(), context, d);
-                                    long lastModified = System.currentTimeMillis();
-                                    if (d.lastModified() < lastModified) {
-                                        boolean success = d.setLastModified(lastModified);
-                                        if (!success) {
-                                            LOG.warn("Could not set timestamp of {}", d);
-                                        }
-                                    }
+                                    found = true;
+                                    touch(d);
                                 }
+                            }
+                            if (! found){
+                                LOG.warn("Could not find anytihng to match {}", event);
                             }
                         } else if (Files.isDirectory(context)) {
                             for (File d : dirs) {
                                 if (context.toAbsolutePath().startsWith(d.getAbsolutePath())) {
                                     LOG.info("Found new directory {} in {} in {}, watching too", event.kind(), context, d);
                                     try {
-                                        context.register(watchService, ENTRY_CREATE);
+                                        WatchKey newKey = context.register(watchService, ENTRY_CREATE);
+                                        keys.put(newKey, context);
+                                        LOG.info("Now watching {} directories for new files", keys.size());
+                                        touch(d); // new directory may contain files
                                     } catch (IOException e) {
                                         LOG.error(e.getMessage());
                                     }
@@ -201,6 +203,16 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
         }
     }
 
+    protected void touch(File d) {
+        long lastModified = System.currentTimeMillis();
+        if (d.lastModified() < lastModified) {
+            boolean success = d.setLastModified(lastModified);
+            if (!success) {
+                LOG.warn("Could not set timestamp of {}", d);
+            }
+        }
+    }
+
     protected Map<WatchKey, Path>  registerWatchers()  {
         final Map<WatchKey, Path> keys = new HashMap<>();
 
@@ -213,6 +225,9 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
                         WatchKey key = dir.register(watchService, ENTRY_CREATE);
                         LOG.debug("Watching {}", dir.toAbsolutePath());
                         keys.put(key, dir);
+                        if (keys.size() % 200 == 0){
+                            LOG.info("Now watching {} directories for new files (still walking)", keys.size());
+                        }
                         return FileVisitResult.CONTINUE;
                     }
                 });
