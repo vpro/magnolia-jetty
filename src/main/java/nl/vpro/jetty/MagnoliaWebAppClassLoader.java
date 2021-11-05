@@ -9,6 +9,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.slf4j.Logger;
@@ -33,23 +34,44 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
 
     private static final String RESOURCES = "src" + File.separator + "main" + File.separator + "resources" + File.separator;
 
-    private final File[] dirs;
+    private final Set<File> dirs;
 
     private final Map<String, Resource> found = new ConcurrentHashMap<>();
     private final WatchService watchService = FileSystems.getDefault().newWatchService();
 
 
     {
-        File dir = new File(System.getProperty("user.dir")).getParentFile();
-        dirs = Arrays.stream(
+
+
+        final Set<File> parentDirs = new HashSet<>();
+
+        String magnoliaHome = System.getProperty("magnolia.home");
+        if (magnoliaHome != null) {
+            LOG.info("Magnolia home detected {}", magnoliaHome);
+            parentDirs.add(new File(magnoliaHome).getParentFile().getParentFile());
+            parentDirs.add(new File(magnoliaHome).getParentFile());
+        }
+        String mavenMultiModule = System.getProperty("maven.multiModuleProjectDirectory");
+        if (mavenMultiModule != null) {
+            parentDirs.add(new File(mavenMultiModule).getParentFile());
+            parentDirs.add(new File(mavenMultiModule));
+        }
+        String userDir = System.getProperty("user.dir");
+        if (userDir != null) {
+            parentDirs.add(new File(userDir).getParentFile());
+            parentDirs.add(new File(userDir));
+        }
+        dirs = parentDirs.stream().flatMap(dir ->
+            Arrays.stream(
                 Objects.requireNonNull(
                     dir.listFiles(pathname ->
                         pathname.isDirectory() && new File(pathname, RESOURCES).isDirectory()
                     )
                 )
-            ).map(f -> new File(f, RESOURCES)).toArray(File[]::new);
-        if (dirs.length > 0) {
-            LOG.info("Watching files in {}", Arrays.asList(dirs));
+            ).map(f -> new File(f, RESOURCES))
+        ).collect(Collectors.toSet());
+        if (!dirs.isEmpty()) {
+            LOG.info("Watching files in {}", dirs);
             new Thread(this::watch, "Watching directories for jetty run").start();
         } else {
             LOG.info("Could not find files to watch");
