@@ -45,8 +45,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jetty.version>9.4.44.v20210927</jetty.version>
-    <slf4j.version>1.7.32</slf4j.version>
+    <jetty.version>9.4.45.v20220203</jetty.version>
+    <slf4j.version>1.7.36</slf4j.version>
   </properties>
 
   <build>
