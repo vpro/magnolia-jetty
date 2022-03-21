@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
 /**
  * See MGNL-12866
@@ -37,8 +38,12 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
     private final Set<File> dirs;
 
     private final Map<String, Resource> found = new ConcurrentHashMap<>();
+    private final Map<String, Resource> jars = new ConcurrentHashMap<>();
     private final WatchService watchService = FileSystems.getDefault().newWatchService();
 
+
+
+    private boolean touchJars = true;
 
     {
         final Set<File> parentDirs = new HashSet<>();
@@ -84,6 +89,13 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
         super(parent, context);
     }
 
+    public boolean isTouchJars() {
+        return touchJars;
+    }
+
+    public void setTouchJars(boolean touchJars) {
+        this.touchJars = touchJars;
+    }
     @Override
     public URL getResource(String fileName) {
         if (! fileName.endsWith(".class")) { // no chance on that
@@ -118,7 +130,20 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
             }
             LOG.debug("Cannot read {}", fileName);
         }
-        return super.getResource(fileName);
+        URL resource = super.getResource(fileName);
+        if (touchJars) {
+            if (resource != null && "jar".equals(resource.getProtocol())) {
+                final String fileUrl = resource.getFile().split("!")[0];
+                final File file = new File(fileUrl.substring("file:".length()));
+                if (file.getName().contains("magnolia") && ! file.getName().startsWith("magnolia-lang-")) {
+                    jars.computeIfAbsent(fileUrl, k -> {
+                        LOG.info("Found new jar {}", file);
+                        return new Resource(file);
+                    });
+                }
+            }
+        }
+        return resource;
     }
 
     private URL[] urls;
@@ -191,6 +216,12 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
                                     LOG.info("Found {} in {}, touching {}", event.kind(), context, d);
                                     found = true;
                                     touch(d);
+                                    if (touchJars) {
+                                        LOG.info("Touching {} magnolia jars too", jars.size());
+                                        for (Resource j : jars.values()) {
+                                            touch(j);
+                                        }
+                                    }
                                 } else {
                                     LOG.debug("Ignoring {} (not in {})", context, d);
                                 }
@@ -198,12 +229,12 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
                             if (! found){
                                 LOG.warn("Could not find anything to match {}", event);
                             }
-                        } else if (Files.isDirectory(context)) {
+                        } else if (Files.isDirectory(context) && event.kind() == ENTRY_CREATE) {
                             for (File d : dirs) {
                                 if (context.toAbsolutePath().startsWith(d.getAbsolutePath())) {
                                     LOG.info("Found new directory {} in {} in {}, watching too", event.kind(), context, d);
                                     try {
-                                        WatchKey newKey = context.register(watchService, ENTRY_CREATE);
+                                        WatchKey newKey = context.register(watchService, ENTRY_CREATE, ENTRY_MODIFY);
                                         keys.put(newKey, context);
                                         LOG.info("Now watching {} directories for new files", keys.size());
                                         touch(d); // new directory may contain files
@@ -226,6 +257,12 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
         }
     }
 
+    protected void touch(Resource d) {
+        touch(d.file);
+        d.lastModified = d.file.lastModified();
+    }
+
+
     protected void touch(File d) {
         long lastModified = System.currentTimeMillis();
         if (d.lastModified() < lastModified) {
@@ -237,7 +274,7 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
     }
 
     protected Map<WatchKey, Path>  registerWatchers()  {
-        final Map<WatchKey, Path> keys = new HashMap<>();
+        final Map<WatchKey, Path> dirKeys = new HashMap<>();
 
          for (File watchedDirectory : dirs) {
             Path path = Paths.get(watchedDirectory.toString());
@@ -245,11 +282,15 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
                 Files.walkFileTree(path, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<Path>() {
                     @Override
                     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                        WatchKey key = dir.register(watchService, ENTRY_CREATE);
-                        LOG.debug("Watching {}", dir.toAbsolutePath());
-                        keys.put(key, dir);
-                        if (keys.size() % 200 == 0){
-                            LOG.info("Now watching {} directories for new files (still walking)", keys.size());
+                        try {
+                            WatchKey key = dir.register(watchService, ENTRY_CREATE, ENTRY_MODIFY);
+                            LOG.debug("Watching {}", dir.toAbsolutePath());
+                            dirKeys.put(key, dir);
+                            if (dirKeys.size() % 200 == 0) {
+                                LOG.info("Now watching {} directories for new files (still walking)", dirKeys.size());
+                            }
+                        } catch (Exception e) {
+                            LOG.warn(e.getMessage());
                         }
                         return FileVisitResult.CONTINUE;
                     }
@@ -258,7 +299,7 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
                 LOG.warn("For {}: {}", watchedDirectory, e.getMessage());
             }
          }
-         return keys;
+         return dirKeys;
     }
 
 }
