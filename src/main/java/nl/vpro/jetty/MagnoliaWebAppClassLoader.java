@@ -96,6 +96,16 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
     public void setTouchJars(boolean touchJars) {
         this.touchJars = touchJars;
     }
+
+
+    protected WatchEvent.Kind<?>[] getKinds() {
+        if (touchJars) {
+            return new WatchEvent.Kind[]{ENTRY_CREATE, ENTRY_MODIFY};
+        } else {
+            return new WatchEvent.Kind[]{ENTRY_CREATE};
+        }
+    }
+
     @Override
     public URL getResource(String fileName) {
         if (! fileName.endsWith(".class")) { // no chance on that
@@ -234,7 +244,7 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
                                 if (context.toAbsolutePath().startsWith(d.getAbsolutePath())) {
                                     LOG.info("Found new directory {} in {} in {}, watching too", event.kind(), context, d);
                                     try {
-                                        WatchKey newKey = context.register(watchService, ENTRY_CREATE, ENTRY_MODIFY);
+                                        WatchKey newKey = context.register(watchService, getKinds());
                                         keys.put(newKey, context);
                                         LOG.info("Now watching {} directories for new files", keys.size());
                                         touch(d); // new directory may contain files
@@ -281,9 +291,9 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
             try {
                 Files.walkFileTree(path, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<Path>() {
                     @Override
-                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
                         try {
-                            WatchKey key = dir.register(watchService, ENTRY_CREATE, ENTRY_MODIFY);
+                            WatchKey key = dir.register(watchService, getKinds());
                             LOG.debug("Watching {}", dir.toAbsolutePath());
                             dirKeys.put(key, dir);
                             if (dirKeys.size() % 200 == 0) {
