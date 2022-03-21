@@ -41,8 +41,6 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
 
 
     {
-
-
         final Set<File> parentDirs = new HashSet<>();
 
         String magnoliaHome = System.getProperty("magnolia.home");
@@ -57,7 +55,7 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
             parentDirs.add(new File(mavenMultiModule));
         }
         String userDir = System.getProperty("user.dir");
-        if (userDir != null) {
+        if (userDir != null && ! userDir.equals(mavenMultiModule)) {
             parentDirs.add(new File(userDir).getParentFile());
             parentDirs.add(new File(userDir));
         }
@@ -89,8 +87,9 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
     @Override
     public URL getResource(String fileName) {
         if (! fileName.endsWith(".class")) { // no chance on that
-            for (File file : dirs) {
-                final File resource = new File(file, fileName);
+            for (File dir : dirs) {
+
+                final File resource = new File(dir, fileName);
                 if (resource.canRead()) {
                     Resource f = found.computeIfAbsent(fileName, (fn) -> {
                         LOG.debug("Found {} -> {}", fileName, resource);
@@ -192,10 +191,12 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
                                     LOG.info("Found {} in {}, touching {}", event.kind(), context, d);
                                     found = true;
                                     touch(d);
+                                } else {
+                                    LOG.debug("Ignoring {} (not in {})", context, d);
                                 }
                             }
                             if (! found){
-                                LOG.warn("Could not find anytihng to match {}", event);
+                                LOG.warn("Could not find anything to match {}", event);
                             }
                         } else if (Files.isDirectory(context)) {
                             for (File d : dirs) {
