@@ -9,6 +9,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.eclipse.jetty.webapp.WebAppClassLoader;
@@ -43,7 +44,7 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
 
 
 
-    private boolean touchJars = true;
+    private Pattern touchJars = Pattern.compile("^magnolia(?!\\-lang).*$");
 
     {
         final Set<File> parentDirs = new HashSet<>();
@@ -89,17 +90,21 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
         super(parent, context);
     }
 
-    public boolean isTouchJars() {
+    public Pattern isTouchJars() {
         return touchJars;
     }
 
-    public void setTouchJars(boolean touchJars) {
-        this.touchJars = touchJars;
+    public void setTouchJars(String touchJars) {
+        if (touchJars == null || touchJars.trim().isEmpty()) {
+            this.touchJars = null;
+        } else {
+            this.touchJars = Pattern.compile(touchJars);
+        }
     }
 
 
     protected WatchEvent.Kind<?>[] getKinds() {
-        if (touchJars) {
+        if (touchJars != null) {
             return new WatchEvent.Kind[]{ENTRY_CREATE, ENTRY_MODIFY};
         } else {
             return new WatchEvent.Kind[]{ENTRY_CREATE};
@@ -141,16 +146,14 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
             LOG.debug("Cannot read {}", fileName);
         }
         URL resource = super.getResource(fileName);
-        if (touchJars) {
+        if (touchJars != null) {
             if (resource != null && "jar".equals(resource.getProtocol())) {
                 final String fileUrl = resource.getFile().split("!")[0];
                 final File file = new File(fileUrl.substring("file:".length()));
-                if (file.getName().contains("magnolia") && ! file.getName().startsWith("magnolia-lang-")) {
-                    jars.computeIfAbsent(fileUrl, k -> {
-                        LOG.info("Found new jar {}", file);
-                        return new Resource(file);
-                    });
-                }
+                jars.computeIfAbsent(fileUrl, k -> {
+                    LOG.info("Found new jar {}", file);
+                    return new Resource(file);
+                });
             }
         }
         return resource;
@@ -226,12 +229,7 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
                                     LOG.info("Found {} in {}, touching {}", event.kind(), context, d);
                                     found = true;
                                     touch(d);
-                                    if (touchJars) {
-                                        LOG.info("Touching {} magnolia jars too", jars.size());
-                                        for (Resource j : jars.values()) {
-                                            touch(j);
-                                        }
-                                    }
+                                    touchJars();
                                 } else {
                                     LOG.debug("Ignoring {} (not in {})", context, d);
                                 }
@@ -267,6 +265,20 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
         }
     }
 
+    protected void touchJars() {
+        if (touchJars != null) {
+            int count = 0;
+            for (Resource j : jars.values()) {
+                if (touchJars.matcher(j.file.getName()).matches()) {
+                    touch(j);
+                    count++;
+                }
+            }
+            if (count > 0) {
+                LOG.info("Touched {}  {} jars too", count, touchJars.pattern());
+            }
+        }
+    }
     protected void touch(Resource d) {
         touch(d.file);
         d.lastModified = d.file.lastModified();
