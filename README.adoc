@@ -22,10 +22,10 @@ Create a Contex.xml for jetty with something like this:
       <Arg>
         <Ref id="context"/>
       </Arg>
-     <!-- if true, also all magnolia jars are touched when a watched file is changed
-          usefull when adding decorations
+     <!-- Which jars need to be touched in case some change in resources is detected.
+          Usefull when adding decorations
       -->
-      <Set name="touchJars">true</Set>
+      <Set name="touchJars">^magnolia(?!\-lang).*$</Set>
     </New>
   </Set>
 
