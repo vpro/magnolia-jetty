@@ -151,7 +151,11 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
                 final String fileUrl = resource.getFile().split("!")[0];
                 final File file = new File(fileUrl.substring("file:".length()));
                 jars.computeIfAbsent(fileUrl, k -> {
-                    LOG.info("Found new jar {}", file);
+                    if (touchJars.matcher(file.getName()).matches()) {
+                        LOG.info("Found new (touchable) jar {}", file);
+                    } else {
+                        LOG.debug("Found new jar {}", file);
+                    }
                     return new Resource(file);
                 });
             }
