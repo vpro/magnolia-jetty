@@ -45,7 +45,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jetty.version>9.4.45.v20220203</jetty.version>
+    <jetty.version>9.4.46.v20220331</jetty.version>
     <slf4j.version>1.7.36</slf4j.version>
   </properties>
 
@@ -54,7 +54,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
+        <version>3.10.1</version>
         <configuration>
           <source>8</source>
           <target>8</target>
