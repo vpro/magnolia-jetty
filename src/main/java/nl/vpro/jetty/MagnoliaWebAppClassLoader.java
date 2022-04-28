@@ -221,7 +221,7 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
                 try {
                     final Path dir = keys.get(key);
                     if (dir == null) {
-                        LOG.info("No such dir {} watching", key);
+                        LOG.info("No such dir {} watching. Ignoring event.", key);
                         continue;
                     }
                     for (WatchEvent<?> event : key.pollEvents()) {
