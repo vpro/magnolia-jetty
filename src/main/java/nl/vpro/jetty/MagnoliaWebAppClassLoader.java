@@ -262,7 +262,8 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
                 } finally {
                     boolean keyValid = key.reset(); // IMPORTANT: The key must be reset after processed
                     if (! keyValid) {
-                        LOG.info("Resetting the key {} was impossible because it is not valid", key);
+                        LOG.info("Resetting the key {} was impossible because it is not valid. Stopping watch.", key);
+                        keys.remove(key);
                     }
                 }
             } catch (InterruptedException e) {
