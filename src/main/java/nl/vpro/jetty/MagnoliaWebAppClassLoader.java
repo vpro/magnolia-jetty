@@ -30,6 +30,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
  * @author Michiel Meeuwissen
  * @since 3.1
  */
+@SuppressWarnings("unused")
 public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(MagnoliaWebAppClassLoader.class);
@@ -101,7 +102,6 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
             this.touchJars = Pattern.compile(touchJars);
         }
     }
-
 
     protected WatchEvent.Kind<?>[] getKinds() {
         if (touchJars != null) {
@@ -214,8 +214,7 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
 
         final Map<WatchKey, Path> keys = registerWatchers();
         LOG.info("Watching {} directories for new files", keys.size());
-        boolean valid = true;
-        while (valid) {
+        while (true) {
             try {
                 WatchKey key = watchService.take();
                 try {
@@ -268,7 +267,7 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
                 }
             } catch (InterruptedException e) {
                 LOG.info("Interrupted");
-                return;
+                break;
             }
         }
         LOG.info("Stopped watching.");
@@ -288,11 +287,11 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
             }
         }
     }
+
     protected void touch(Resource d) {
         touch(d.file);
         d.lastModified = d.file.lastModified();
     }
-
 
     protected void touch(File d) {
         long lastModified = System.currentTimeMillis();
