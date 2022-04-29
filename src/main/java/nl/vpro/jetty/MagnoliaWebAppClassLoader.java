@@ -12,9 +12,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.eclipse.jetty.util.log.Log;
+import org.eclipse.jetty.util.log.Logger;
 import org.eclipse.jetty.webapp.WebAppClassLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
@@ -33,7 +33,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 @SuppressWarnings("unused")
 public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MagnoliaWebAppClassLoader.class);
+    private static final Logger LOG = Log.getLogger(MagnoliaWebAppClassLoader.class);
 
     private static final String RESOURCES = "src" + File.separator + "main" + File.separator + "resources" + File.separator;
 
@@ -136,7 +136,7 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
                         LOG.debug("Found {}", resource);
                         return resource.toURI().toURL();
                     } catch (MalformedURLException e) {
-                        LOG.error("{} -> {}", resource, e.getMessage());
+                        LOG.warn("{} -> {}", resource, e.getMessage());
 
                     }
                 } else {
@@ -178,7 +178,7 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
                     URL url = resourceFile.toURI().toURL();
                     result.add(url);
                 } catch (MalformedURLException e) {
-                    LOG.error("{} -> {}", resourceFile, e.getMessage());
+                    LOG.warn("{} -> {}", resourceFile, e.getMessage());
                 }
             }
             result.addAll(Arrays.asList(super.getURLs()));
@@ -250,7 +250,7 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
                                         LOG.info("Now watching {} directories for new files", keys.size());
                                         touch(d); // new directory may contain files
                                     } catch (IOException e) {
-                                        LOG.error(e.getMessage());
+                                        LOG.warn(e.getMessage());
                                     }
                                     break;
                                 }
