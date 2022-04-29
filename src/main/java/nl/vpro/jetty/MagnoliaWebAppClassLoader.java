@@ -45,7 +45,7 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
 
 
 
-    private Pattern touchJars = Pattern.compile("^magnolia(?!\\-lang).*$");
+    private Pattern touchJars = Pattern.compile("^magnolia(?!-lang).*$");
 
     {
         final Set<File> parentDirs = new HashSet<>();
