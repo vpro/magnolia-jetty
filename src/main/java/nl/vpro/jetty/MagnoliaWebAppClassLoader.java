@@ -217,8 +217,8 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
         while (true) {
             try {
                 WatchKey key = watchService.take();
+                final Path dir = keys.get(key);
                 try {
-                    final Path dir = keys.get(key);
                     if (dir == null) {
                         LOG.info("No such dir {} watching. Ignoring event.", key);
                         continue;
@@ -261,7 +261,7 @@ public class MagnoliaWebAppClassLoader extends WebAppClassLoader {
                 } finally {
                     boolean keyValid = key.reset(); // IMPORTANT: The key must be reset after processed
                     if (! keyValid) {
-                        LOG.info("Resetting the key {} was impossible because it is not valid. Stopping watch.", key);
+                        LOG.info("Resetting the key {} {} was impossible because it is not valid. Stopping watch.", key, dir);
                         keys.remove(key);
                     }
                 }
